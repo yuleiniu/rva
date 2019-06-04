@@ -6,7 +6,7 @@ This repository contains the code for the following paper:
 * Yulei Niu, Hanwang Zhang, Manli Zhang, Jianhong Zhang, Zhiwu Lu, Ji-Rong Wen, *Recursive Visual Attention in Visual Dialog*. In CVPR, 2019. ([PDF](https://arxiv.org/pdf/1812.02664.pdf))
 
 ```
-@InProceedings{Niu_2019_CVPR,
+@InProceedings{niu2019recursive,
     author = {Niu, Yulei and Zhang, Hanwang and Zhang, Manli and Zhang, Jianhong and Lu, Zhiwu and Wen, Ji-Rong},
     title = {Recursive Visual Attention in Visual Dialog},
     booktitle = {The IEEE Conference on Computer Vision and Pattern Recognition (CVPR)},
