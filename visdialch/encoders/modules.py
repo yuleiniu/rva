@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 from torch.nn import functional as F
-from visdialch.utils import GumbelSoftmax, GatedTrans
+from visdialch.utils import GatedTrans
 
 class ATT_MODULE(nn.Module):
     """docstring for ATT_MODULE"""
@@ -95,8 +95,6 @@ class PAIR_MODULE(nn.Module):
         )
         self.att = nn.Linear(2, 1)
 
-        self.G_softmax = GumbelSoftmax()
-
         for m in self.modules():
             if isinstance(m, nn.Linear):
                 nn.init.kaiming_uniform_(m.weight.data)
@@ -133,7 +131,7 @@ class PAIR_MODULE(nn.Module):
         hist_gs_set = torch.zeros_like(hist_logits)
         for i in range(num_rounds):
             # one-hot
-            hist_gs_set[:, i, :(i+1)] = self.G_softmax(hist_logits[:, i, :(i+1)]) # shape: (batch_size, i+1)
+            hist_gs_set[:, i, :(i+1)] = F.gumbel_softmax(hist_logits[:, i, :(i+1)]) # shape: (batch_size, i+1)
             
         return hist_gs_set
 
@@ -157,7 +155,6 @@ class INFER_MODULE(nn.Module):
         )
 
         self.softmax = nn.Softmax(dim=-1)
-        self.G_softmax = GumbelSoftmax()
 
         for m in self.modules():
             if isinstance(m, nn.Linear):
@@ -179,7 +176,7 @@ class INFER_MODULE(nn.Module):
         ques_embed = F.normalize(ques_embed, p=2, dim=-1) # shape: (batch_size, num_rounds, quen_len_max, lstm_hidden_size) 
         ques_logits = self.att(ques_embed) # shape: (batch_size, num_rounds, 2)
         # ignore <pad> word
-        ques_gs = self.G_softmax(ques_logits.view(-1, 2)).view(-1, num_rounds, 2)
+        ques_gs = F.gumbel_softmax(ques_logits.view(-1, 2)).view(-1, num_rounds, 2)
         Lambda = self.softmax(ques_logits)
         
         return ques_gs, Lambda

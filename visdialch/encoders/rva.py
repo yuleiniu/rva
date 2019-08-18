@@ -2,7 +2,7 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 
-from visdialch.utils import DynamicRNN, GumbelSoftmax
+from visdialch.utils import DynamicRNN
 from visdialch.utils import Q_ATT, H_ATT, V_Filter
 from .modules import RvA_MODULE
 
@@ -58,7 +58,6 @@ class RvAEncoder(nn.Module):
         )
         # other useful functions
         self.softmax = nn.Softmax(dim=-1)
-        self.G_softmax = GumbelSoftmax()
 
         # initialization
         for m in self.modules():
