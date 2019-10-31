@@ -131,8 +131,14 @@ class PAIR_MODULE(nn.Module):
         hist_gs_set = torch.zeros_like(hist_logits)
         for i in range(num_rounds):
             # one-hot
-            hist_gs_set[:, i, :(i+1)] = F.gumbel_softmax(hist_logits[:, i, :(i+1)]) # shape: (batch_size, i+1)
-            
+            logits = hist_logits[:, i, :(i+1)]
+            if self.training:
+                hist_gs = F.gumbel_softmax(logits, hard=True) # shape: (batch_size, i+1)
+            else:
+                _, max_value_indexes = logits.detach().max(1, keepdim=True)
+                hist_gs = logits.detach().clone().zero_().scatter_(1, max_value_indexes, 1)
+            hist_gs_set[:, i, :(i+1)] = hist_gs
+
         return hist_gs_set
 
 class INFER_MODULE(nn.Module):
@@ -175,8 +181,15 @@ class INFER_MODULE(nn.Module):
         ques_embed = self.embed(ques) # shape: (batch_size, num_rounds, quen_len_max, lstm_hidden_size)
         ques_embed = F.normalize(ques_embed, p=2, dim=-1) # shape: (batch_size, num_rounds, quen_len_max, lstm_hidden_size) 
         ques_logits = self.att(ques_embed) # shape: (batch_size, num_rounds, 2)
-        # ignore <pad> word
-        ques_gs = F.gumbel_softmax(ques_logits.view(-1, 2)).view(-1, num_rounds, 2)
+        
+        logits = ques_logits.view(-1, 2)
+        if self.training:
+            ques_gs = F.gumbel_softmax(logits, hard=True) # shape: (batch_size, i+1)
+        else:
+            _, max_value_indexes = logits.detach().max(1, keepdim=True)
+            ques_gs = logits.detach().clone().zero_().scatter_(1, max_value_indexes, 1)
+        ques_gs = ques_gs.view(-1, num_rounds, 2)
+
         Lambda = self.softmax(ques_logits)
         
         return ques_gs, Lambda
