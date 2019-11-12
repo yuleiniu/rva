@@ -188,7 +188,6 @@ class ImageFeaturesHdfReader(object):
             else:
                 with h5py.File(self.features_hdfpath, "r") as features_hdf:
                     image_id_features = features_hdf["features"][index]
-                    image_id_loc = self.loc_feats(features_hdf, index)
                     self.features[index] = image_id_features
         else:
             # Read chunk from file everytime if not loaded in memory.
